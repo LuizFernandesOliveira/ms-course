@@ -1,6 +1,7 @@
 package com.hroauth.config;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,12 +15,17 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
-@AllArgsConstructor
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
-  private final BCryptPasswordEncoder passwordEncoder;
-  private final JwtAccessTokenConverter accessTokenConverter;
-  private final JwtTokenStore tokenStore;
-  private final AuthenticationManager authenticationManager;
+  @Autowired private BCryptPasswordEncoder passwordEncoder;
+  @Autowired private JwtAccessTokenConverter accessTokenConverter;
+  @Autowired private JwtTokenStore tokenStore;
+  @Autowired private AuthenticationManager authenticationManager;
+
+  @Value("${oauth.client.name}")
+  private String CLIENT_NAME;
+
+  @Value("${oauth.client.secret}")
+  private String CLIENT_SECRET;
 
   @Override
   public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -32,8 +38,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
   public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
     clients
       .inMemory()
-      .withClient("myappname123")
-      .secret(passwordEncoder.encode("myappname123"))
+      .withClient(CLIENT_NAME)
+      .secret(passwordEncoder.encode(CLIENT_SECRET))
       .scopes("read", "write")
       .authorizedGrantTypes("password")
       .accessTokenValiditySeconds(86400);
